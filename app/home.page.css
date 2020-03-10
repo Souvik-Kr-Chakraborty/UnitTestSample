@@ -1,0 +1,37 @@
+.box-shadow {
+  box-shadow : 0 3px 1px -2px rgba(0,0,0,.2), 0 2px 2px 0 rgba(0,0,0,.14), 0 1px 5px 0 rgba(0,0,0,.12);
+}
+ion-datetime button{width: auto !important;}
+
+.field-name-container{
+  display: flex;
+}
+
+.field-name-label{
+  font-weight:bold;
+  font-size: medium;
+  margin: auto;
+}
+
+.field-value-container{
+  display: flex;
+}
+
+.field-value-label{
+  font-weight:normal;
+  color: black;
+  font-size: medium;
+  margin: auto;
+}
+
+.remove-container{
+  display: flex;
+}
+
+.remove-button{
+  margin: auto;
+}
+
+.inline-error{
+  color: red;
+}

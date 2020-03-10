@@ -1,0 +1,157 @@
+<ion-card class="ion-text-center ion-align-items-center">
+    <ion-card-header class="box-shadow">
+        <ion-card-title color="primary">
+            <span>DYNAMIC FORM</span>
+            <span style="float:right;padding:2px">
+                <ion-icon name="settings" (click)="toggleConfigMode()"></ion-icon>
+            </span>
+        </ion-card-title>
+    </ion-card-header>
+    <ion-card-content>
+        <div *ngIf="configMode">
+            <ion-toolbar color="grey" class="box-shadow ion-no-margin">
+                <ion-grid>
+                    <ion-row>
+                        <ion-col>
+                            <ion-item>
+                                <ion-label class="field-name-label">Type</ion-label>
+                                <ion-select class="field-value-label" [(ngModel)]="formConfig.type" interface="popover">
+                                    <ion-select-option value="text">Text</ion-select-option>
+                                    <ion-select-option value="number">Number</ion-select-option>
+                                    <ion-select-option value="tel">Tel</ion-select-option>
+                                    <ion-select-option value="url">Url</ion-select-option>
+                                    <ion-select-option value="email">Email</ion-select-option>
+                                    <ion-select-option value="password">Password</ion-select-option>
+                                    <ion-select-option value="date">Date</ion-select-option>
+                                    <ion-select-option value="selector">Selector</ion-select-option>
+                                    <ion-select-option value="radio">Single-choice</ion-select-option>
+                                    <!-- <ion-select-option value="checkbox">Multi-choice</ion-select-option> -->
+                                </ion-select>
+                            </ion-item>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row>
+                        <ion-col>
+                            <ion-item>
+                                <ion-label class="field-name-label">Label</ion-label>
+                                <ion-input class="field-value-label" [(ngModel)]="formConfig.fieldName" placeHolder="type here..."></ion-input>
+                            </ion-item>
+                        </ion-col>
+                        <ion-col *ngIf="formConfig.type!='radio' 
+                        && formConfig.type!='checkbox'">
+                            <ion-item>
+                                <ion-label  class="field-name-label">Placeholder</ion-label>
+                                <ion-input class="field-value-label" [(ngModel)]="formConfig.placeHolder" placeHolder="type here..."></ion-input>
+                            </ion-item>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row>
+                        <ion-col *ngIf="formConfig.type!='selector'
+                        && formConfig.type!='radio' 
+                        && formConfig.type!='checkbox'">
+                            <ion-item>
+                                <ion-label class="field-name-label">Read Only</ion-label>
+                                <ion-checkbox [(ngModel)]="formConfig.readonly" slot="start"></ion-checkbox>
+                            </ion-item>
+                        </ion-col>
+                        <ion-col>
+                            <ion-item>
+                                <ion-label class="field-name-label">Required</ion-label>
+                                <ion-checkbox [(ngModel)]="formConfig.required" slot="start"></ion-checkbox>
+                            </ion-item>
+                        </ion-col>
+                    </ion-row>
+                    <ion-row
+                        *ngIf="formConfig.type=='radio' || formConfig.type=='checkbox' || formConfig.type=='selector'">
+                        <ion-col>
+                            <ion-list lines="none" style="margin-top: 5px;">
+                                <form [formGroup]="configOptionForm">
+                                    <div formArrayName="options">
+                                        <ion-item *ngFor="let control of options.controls | keyvalue; let i=index">
+                                            <ion-input  class="field-value-label" required type="text" [formControlName]="control.key"
+                                                placeholder="Enter option">
+                                            </ion-input>
+                                            <ion-button (click)="addOption()" slot="end">
+                                                <ion-icon name="add"></ion-icon>
+                                            </ion-button>
+                                            <ion-button (click)="deleteOption(i)" slot="end">
+                                                <ion-icon name="remove"></ion-icon>
+                                            </ion-button>
+                                        </ion-item>
+                                    </div>
+                                </form>
+                            </ion-list>
+                        </ion-col>
+                    </ion-row>
+                </ion-grid>
+                <ion-button (click)="validateAddFieldForm()" slot="end">
+                    <ion-icon name="add"></ion-icon>
+                </ion-button>
+            </ion-toolbar>
+        </div>
+        <div *ngIf="!isEmptyForms()">
+            <ion-list lines="none" style="margin-top: 5px;">
+                <form [formGroup]="myForm" (ngSubmit)="onSubmit()">
+                    <ion-grid formArrayName="fields">
+                        <ion-row *ngFor="let control of fields.controls; let i=index" [formGroupName]="i">
+                            <ion-col size="3" class="field-name-container">
+                                <ion-label class="field-name-label">
+                                    {{data[i].fieldName}}{{(data[i].required==true) ? "*" : ""}}
+                                </ion-label>
+                            </ion-col>
+                            <ion-col size="7">
+                                <ion-datetime class="field-value-label" *ngIf="data[i].type=='date'"
+                                    display-timezone="utc" formControlName="fieldvalue"
+                                    [placeholder]="data[i].placeHolder" [required]="data[i].required"
+                                    [readonly]="data[i].readonly">
+                                </ion-datetime>
+                                <ion-input class="field-value-label" *ngIf="data[i].type=='text'
+                                    || data[i].type=='number' 
+                                    || data[i].type=='tel'
+                                    || data[i].type=='url'
+                                    || data[i].type=='email'
+                                    || data[i].type=='password'" required [type]="data[i].type"
+                                    formControlName="fieldvalue" [placeholder]="data[i].placeHolder"
+                                    [readonly]="data[i].readonly" [required]="data[i].required">
+                                </ion-input>
+                                <ion-select class="field-value-label" *ngIf="data[i].type=='selector'"
+                                    [placeholder]="data[i].placeHolder" formControlName="fieldvalue"
+                                    [required]="data[i].required" interface="popover">
+                                    <ion-select-option class="field-value-label" *ngFor="let val of data[i].options"
+                                        [value]="val">
+                                        {{val}}</ion-select-option>
+                                </ion-select>
+                                <ion-list *ngIf="data[i].type=='radio'">
+                                    <ion-radio-group formControlName="fieldvalue" [required]="data[i].required">
+                                        <ion-item *ngFor="let val of data[i].options">
+                                            <ion-label class="field-value-label">{{val}}</ion-label>
+                                            <ion-radio slot="start" [value]="val"></ion-radio>
+                                        </ion-item>
+                                    </ion-radio-group>
+                                </ion-list>
+                                <ion-list *ngIf="data[i].type=='checkbox'">
+                                    <div formArrayName="options">
+                                        <ion-item *ngFor="let valControl of options.controls; let ind=index" [formGroupName]="ind">
+                                            <ion-label class="field-value-label">{{data[i].options[ind].value}}</ion-label>
+                                            <ion-checkbox slot="start" [value]="data[i].options[ind].value"
+                                            [checked]="data[i].options[ind].status" formControlName="option"></ion-checkbox>
+                                            <!-- (ionChange)="updateSelectedOptions($event, i, ind, val)" -->
+                                        </ion-item>
+                                    </div>
+                                </ion-list>
+                            </ion-col>
+                            <ion-col size="2" class="remove-container">
+                                <ion-button class="remove-button" (click)="deleteField(i)">
+                                    <ion-icon name="remove"></ion-icon>
+                                </ion-button>
+                            </ion-col>
+                            <ion-label class="inline-error" *ngIf="control.invalid && control.dirty">
+                                {{data[i].fieldName}} is either blank or not valid.</ion-label>
+                        </ion-row>
+                    </ion-grid>
+                    <ion-button type="submit">SUBMIT</ion-button>
+                </form>
+            </ion-list>
+        </div>
+    </ion-card-content>
+</ion-card>
